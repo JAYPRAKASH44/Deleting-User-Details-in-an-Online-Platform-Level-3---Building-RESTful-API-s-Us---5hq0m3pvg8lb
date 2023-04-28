@@ -11,7 +11,41 @@ const userDetails = JSON.parse(
 app.use(express.json());
 
 //Write DELETE endpoint for deleting the details of user
+app.delete("/api/v1/details/:id",(req,res)=>
+{
+  let id=req.params.id*1;
+  console.log(id)
+  const ansDetails=userDetails.find(e=>e.id==id);
+  if(!ansDetails)
+  {
+    console.log(ansDetails)
+    return res.status(404).send({
+      status: "failed",
+      message: "User not found!",
+    });
+  }
+  else
+  {
 
+  // console.log(ansDetails)
+  let newUserDetails=userDetails.filter((e)=>e.id!=ansDetails.id);
+  
+  fs.writeFile(
+    `${__dirname}/data/userDetails.json`,
+    JSON.stringify(newUserDetails),
+    (err) => {
+      res.status(200).json({
+        status: "success",
+        "message": "User details deleted successfully",
+        "data": {
+          "details":ansDetails,
+        },
+      });
+    }
+  );
+  }
+
+})
 // PATCH endpoint for editing user details
 app.patch("/api/v1/details/:id", (req, res) => {
   const id = req.params.id * 1;
@@ -45,7 +79,7 @@ app.patch("/api/v1/details/:id", (req, res) => {
 
 // POST endpoint for registering new user
 app.post("/api/v1/details", (req, res) => {
-  const newId = userDetails[userDetails.length - 1].id + 1;
+  const newId = userDetails[userDetails.length - 1]?userDetails[userDetails.length - 1].id + 1:1;
   const { name, mail, number } = req.body;
   const newUser = { id: newId, name, mail, number };
   userDetails.push(newUser);
